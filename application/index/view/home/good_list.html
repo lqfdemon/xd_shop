@@ -1,0 +1,57 @@
+{extend name="common_home_page" /}
+{block name="content"}
+<div class="breadcrumb">
+	<a>全部分类</a>
+	<span>></span>
+	<a>{$catalog_name}</a>
+</div>
+
+<div class="main_wrap clearfix">
+	
+	<div class="l_wrap fl clearfix">
+		<div class="new_goods">
+			<h3>新品推荐</h3>
+			<ul>
+				<li>
+					<a href="#"><img src="{$Think.PUBLIC_PATH}shop/images/goods/goods001.jpg"></a>
+					<h4><a href="#">进口柠檬</a></h4>
+					<div class="prize">￥3.90</div>
+				</li>
+				<li>
+					<a href="#"><img src="{$Think.PUBLIC_PATH}shop/images/goods/goods002.jpg"></a>
+					<h4><a href="#">玫瑰香葡萄</a></h4>
+					<div class="prize">￥16.80</div>
+				</li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="r_wrap fr clearfix">
+		<div class="sort_bar">
+			<a href="#" class="active">默认</a>
+			<a href="#">价格</a>
+			<a href="#">人气</a>
+		</div>
+
+		<ul class="goods_type_list clearfix">
+			{volist name='list' id='good'}
+			<li>
+				<a href="{:url('detail',['good_id'=>$good.good_id])}"><img src="{$Think.SITE_PUBLIC_URL.$good.original_img}"></a>
+				<h4><a href="detail.html">{$good.good_name}</a></h4>
+				<div class="operate">
+					<span class="prize">￥{$good.price}</span>
+					<span class="unit">{$good.measurement}</span>
+				</div>
+			</li>
+			{/volist}
+		</ul>
+		{$list->render()}
+	</div>
+</div>
+{/block}
+{block name="private_js"}
+<script>
+</script>
+{/block}
+</body>
+</html>

@@ -1,5 +1,5 @@
 <?php
-namespace app\index\controller;
+namespace app\admin\controller;
 use think\Session;
 use think\View;
 use think\Db;
@@ -7,13 +7,12 @@ use think\Controller;
 use think\Log;
 use app\index\model\File;
 
-
 class CommonController extends Controller
 {  
     
     public function _initialize() {
-		if(!Session::has('customer_id')){
-            $this->redirect('index/LogIn/log_in');
+		if(!Session::has('admin_id')){
+            $this->redirect('admin/log_in/log_in');
             return;
         }
     }

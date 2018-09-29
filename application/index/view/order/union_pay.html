@@ -1,0 +1,27 @@
+{extend name="common_home_page" /}
+{block name="content"}
+<form  method="post" action="http://localhost/xd_shop/UnionPayApi.php" target="_blank">
+    <p>
+    <label>商户号：</label>
+    <input id="merId" type="text" name="merId" placeholder="" value="777290058162998" title="默认商户号仅作为联调测试使用，正式上线还请使用正式申请的商户号" required="required"/>
+    </p>
+    <p>
+    <label>交易金额：</label>
+    <input id="amount" type="text" name="amount" placeholder="交易金额" value="{$total_cost}" title="单位为分 " required="required"/>
+    </p>
+    <label>商户订单号：</label>
+    <input id="order_id" type="text" name="order_id" placeholder="商户订单号" value="{$order_no}"required="required"/>
+    </p>
+    <p>
+    <label>&nbsp;</label>
+    <input type="submit" class="button" value="跳转银联页面支付" />
+    </p>
+    </form>
+{/block}
+{block name="private_js"}
+	<script type="text/javascript">
+		   
+	</script>
+{/block}
+</body>
+</html>

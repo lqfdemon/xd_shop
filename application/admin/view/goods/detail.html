@@ -1,0 +1,216 @@
+{extend name="common_page" /}
+{block name="private_file"}
+	<link rel="stylesheet" type="text/css" href="{$Think.PUBLIC_PATH}webuploader/css/webuploader.css" />
+    <script type="text/javascript" src="{$Think.PUBLIC_PATH}webuploader/js/webuploader.js"></script>
+{/block}
+{block name="content"}
+<body class="gray-bg" >
+    <div class="wrapper wrapper-content  animated fadeInRight">
+        <div class="ibox">
+        	<div class="ibox-title">
+        		<h5>商品详情</h5>
+        	</div>
+            <div class="ibox-content">
+                <form class="form-horizontal " id="info_form">
+                    <input type="hidden" name="good_id" id="good_id" value="{$good_id}" >
+                    <input type="hidden" name="original_img" id="original_img" value="" >
+                    <div class="form-group">
+                        <label class="control-label col-sm-2 ">商品名称:</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="good_name" id="good_name"  value=""  >
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">商品描述：</label>
+                        <div class="col-sm-10">
+                            <textarea id="des" name="des" class="form-control"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">价格：</label>
+                        <div class="col-sm-4">
+                            <input type="number" class="form-control" name="price" id="price"  value="0.00"  >
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">商品类别：</label>
+                        <div class="col-sm-4">
+                            <select class="form-control chosen-select" id="catalog_id" name="catalog_id">
+                                {volist name="catalog_list" id="catalog"}
+                                <option value="{$catalog.catalog_id}">{$catalog.catalog_name}</option>
+                                {/volist}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">状态：</label>
+                            <div class="col-sm-4">
+                            <select class="form-control" id="is_on_sale" name="is_on_sale">
+                                <option value="1">在售</option>
+                                <option value="0">下架</option>
+                            </select>
+                        </div>   
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">商品图片：</label>
+                        <div class="col-sm-6">
+                            <img id="original_img_src" src="{$Think.PUBLIC_PATH}shop/images/goods/empty.jpg" style="width:200px;height:200px;">
+                        </div>
+                        <div class="col-sm-4">
+                                <div id="uploader-demo">
+                                    <!--用来存放item-->
+                                    <div id="fileList" class="uploader-list"></div>
+                                    <div id="filePicker">选择图片</div>
+                                </div>
+                        </div>
+                    </div>
+                    <div class="form-group" style="padding-top:30px;">
+                        <div class="col-sm-6">
+                            <button onclick="save()" type="button" class="btn btn-primary center-block" id='save_btn'>
+                                <i class="fa fa-save"></i>
+                                保存
+                            </button>
+                        </div>
+                        <div class="col-sm-6">
+                            <button onclick="back_up()" type="button" class="btn btn-default center-block">
+                                <i class="fa fa-undo"></i>
+                                返回
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+<script>
+    $(document).ready( function (){
+        set_good_detail();
+    }); 
+    function set_good_detail(){
+        var good_id = "{$good_id}";
+        if(good_id == 0){
+            return;
+        }
+        $.get("{:url('get_good_detail')}",{'good_id':good_id},function(data){
+            console.log(data);
+            for (var s in data) {
+                if(s == 'original_img'){
+                    var img_src = "{$Think.SITE_PUBLIC_URL}"+data[s];
+                    console.log(img_src);
+                    $('#original_img_src').attr('src',img_src);
+                }else{
+                    set_val(s, data[s]);
+                }
+            }
+        });
+    }
+    function save(){
+        var send_data = $("#info_form").serializeArray();
+        $.post("{:url('save_good_detail')}", send_data, function (data) {
+            if (data['code']) {
+                console.log(data);
+                ui_confirm("保存完成是否返回?", back_up);
+                $("#save_btn").hide();
+            } else {
+                ui_alert("保存失败");
+            }
+        });
+    }
+    function back_up(){
+        var url="{:url('catalog')}";
+        window.location.href=url;        
+    }
+    // 初始化Web Uploader
+    var $list=$("#fileList");
+    var thumbnailWidth =100;
+    var thumbnailHeight =100;
+    var uploader = WebUploader.create({
+        // 选完文件后，是否自动上传。
+        auto: true,
+        // swf文件路径
+        swf: '../../public/webuploader/js/Uploader.swf',
+        // 文件接收服务端。
+        server: "{:url('upload_original_img')}",
+        // 选择文件的按钮。可选。
+        // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+        pick: '#filePicker',
+        // 只允许选择图片文件。
+        accept: {
+            title: 'Images',
+            extensions: 'gif,jpg,jpeg,bmp,png',
+            mimeTypes: 'image/*'
+    }
+    });
+    // 当有文件添加进来的时候
+    uploader.on( 'fileQueued', function( file ) {
+        var $li = $(
+                '<div id="' + file.id + '" class="file-item thumbnail">' +
+                    '<img>' +
+                    '<div class="info">' + file.name + '</div>' +
+                '</div>'
+                ),
+            $img = $li.find('img');
+
+
+        // $list为容器jQuery实例
+        $list.append( $li );
+
+        // 创建缩略图
+        // 如果为非图片文件，可以不用调用此方法。
+        // thumbnailWidth x thumbnailHeight 为 100 x 100
+        uploader.makeThumb( file, function( error, src ) {
+            if ( error ) {
+                $img.replaceWith('<span>不能预览</span>');
+                return;
+            }
+
+            $img.attr( 'src', src );
+        }, thumbnailWidth, thumbnailHeight );
+    });
+    // 文件上传过程中创建进度条实时显示。
+    uploader.on( 'uploadProgress', function( file, percentage ) {
+        var $li = $( '#'+file.id ),
+            $percent = $li.find('.progress span');
+
+        // 避免重复创建
+        if ( !$percent.length ) {
+            $percent = $('<p class="progress"><span></span></p>')
+                    .appendTo( $li )
+                    .find('span');
+        }
+
+        $percent.css( 'width', percentage * 100 + '%' );
+    });
+
+    // 文件上传成功，给item添加成功class, 用样式标记上传成功。
+    uploader.on( 'uploadSuccess', function( file,response) {
+        $( '#'+file.id ).addClass('upload-state-done');
+        var img_path = response['_raw'];
+        var img_full_path = "../../"+"/"+img_path;
+        console.log(img_path);
+        console.log(img_full_path);
+        
+        $( '#original_img').val(img_path);
+        $( '#original_img_src').attr('src',img_full_path);
+    });
+
+    // 文件上传失败，显示上传出错。
+    uploader.on( 'uploadError', function( file ) {
+        var $li = $( '#'+file.id ),
+            $error = $li.find('div.error');
+
+        // 避免重复创建
+        if ( !$error.length ) {
+            $error = $('<div class="error"></div>').appendTo( $li );
+        }
+
+        $error.text('上传失败');
+    });
+
+    // 完成上传完了，成功或者失败，先删除进度条。
+    uploader.on( 'uploadComplete', function( file ) {
+        $( '#'+file.id ).find('.progress').remove();
+    });
+</script>
+</body>
+{/block}

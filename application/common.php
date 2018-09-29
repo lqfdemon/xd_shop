@@ -12,8 +12,31 @@
 // 应用公共文件
 
 
-	define('FILE_DOWNLOAD_ROOT_PATH','./Uploads/Download/');
+	define('FILE_DOWNLOAD_ROOT_PATH','/Uploads/Download/');
 
+
+	function get_good_catalog_name($catalog_list,$catalog_id){
+        foreach ($catalog_list as $key => $catalog) {
+            if($catalog_id == $catalog['catalog_id']){
+                return $catalog['catalog_name'];
+            }
+        }
+    }
+    function get_sale_state($is_on_sale){
+        $state = "";
+        switch ($is_on_sale) {
+            case 0:
+                $state = "下架";
+                break;
+            case 1:
+                $state = "在售";
+                break; 
+            default:
+                # code...
+                break;
+        }
+        return $state;
+    }
 
 	function rotate($a) {
 		$b = array();

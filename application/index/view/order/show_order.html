@@ -1,0 +1,138 @@
+{extend name="common_home_page" /}
+{block name="content"}
+<div class="total_count">全部商品<em id="total_count">2</em>件</div>	
+	<ul class="cart_list_th clearfix">
+		<li class="col01">商品名称</li>
+		<li class="col02">商品单位</li>
+		<li class="col03">商品价格</li>
+		<li class="col04">数量</li>
+		<li class="col05">小计</li>
+		<li class="col06">操作</li>
+    </ul>
+    <div id="good_list">
+    </div>
+    <ul class="settlements">
+        <li class="col01"><input type="checkbox" name="" checked=""></li>
+        <li class="col02">全选</li>
+        <li class="col03">合计(不含运费)：<span>¥</span><em id="total_cost"></em><br>共计<b id="good_iterm_num">2</b>件商品</li>
+        <li class="col04"><a id="place_order">去结算</a></li>
+    </ul>
+{/block}
+{block name="private_js"}
+	<script type="text/javascript">
+		$(document).ready(function(){
+            set_cart_num();
+            get_goods_in_cart();
+            console.log('init');
+		});
+
+		function set_cart_num(){
+			$.get("{:url('index/cart/get_good_num_in_cart')}",{},function(data){
+				$("#total_count").html(data);
+			});
+		}
+
+        function get_goods_in_cart(){
+            $.get("{:url('index/cart/get_goods_in_cart')}",{},function(data){
+                var goods = data;
+                console.log(data);
+                var html = "";
+                for (var i in goods) {
+                    var iterm_cost = goods[i].good_num*goods[i].price;
+                    html = html + '<ul class="cart_list_td clearfix" data-cartiterm-id="'+goods[i].id+'">';
+                    html = html +     '<li class="col01"><input type="checkbox" class="good_checkbox" checked></li>';
+                    html = html +     '<li class="col02"><img src="'+goods[i].img_src+'"></li>';
+                    html = html +     '<li class="col03">'+goods[i].good_name+'<br><em>'+goods[i].price+'元/'+goods[i].measurement+'</em></li>';
+                    html = html +     '<li class="col04">'+goods[i].measurement+'</li>';
+                    html = html +     '<li class="col05">'+goods[i].price+'</li>';
+                    html = html +     '<li class="col06">';
+                    html = html +         '<div class="num_add">';
+                    html = html +             '<input type="number" class="num_show fl" data-price="'+goods[i].price+'" value="'+goods[i].good_num+'" step="1" min="1">';
+                    html = html +         '</div>';
+                    html = html +     '</li>';
+                    html = html +     '<li class="col07"><em>'+iterm_cost+'</em>元</li>';
+                    html = html +     '<li class="col08" onclick="delete_good_iterm();"><a>删除</a></li>';
+                    html = html + '</ul>';
+                }
+                $("#good_list").empty();
+                $("#good_list").html(html);
+
+                get_total_cost();
+                reg_checkbox_change();
+                reg_good_num_change();
+			}); 
+        }
+
+        function reg_checkbox_change(){
+            $('.good_checkbox').each(function(){
+                console.log('checkbox_each');
+                $(this).change(function(){
+                    get_total_cost();
+                });
+            });
+        }       
+
+        function get_total_cost(){
+            console.log('get_total_cost');
+            var count = $('.good_checkbox:checked').length;
+            $("#good_iterm_num").html(count);
+            
+            var total_cost = 0;
+            $('.good_checkbox:checked').each(function(){
+                var cur_cost_element = $(this).parent().parent().children(".col07").children();
+                var cur_iterm_cost = $(cur_cost_element).html();
+                cur_iterm_cost = parseFloat(cur_iterm_cost);
+                console.log(cur_iterm_cost);
+                total_cost += cur_iterm_cost;
+            });
+            console.log(total_cost);
+            $("#total_cost").html(total_cost);
+        }
+
+        function reg_good_num_change(){
+            $('.num_show').change(function(){
+                var good_price = $(this).attr('data-price');
+                var good_num = $(this).val();
+                var cur_cost = good_price*good_num;
+                var cur_cost_element = $(this).parent().parent().parent().children(".col07").children();
+                cur_cost_element.html(parseFloat(cur_cost));
+                get_total_cost();
+            });
+        }
+
+
+        $("#place_order").click(place_order);
+        function place_order(){
+            console.log('place_order');
+            var cart_list=[];
+            $('.good_checkbox:checked').each(function(){
+                var iterm_element = $(this).parent().parent();
+                var cur_cart_id = iterm_element.attr('data-cartiterm-id');
+                var num_element = iterm_element.children(".col06").children().children();
+                var cur_good_num = num_element.val();
+                var iterm_data = cur_cart_id + '-' + cur_good_num;
+                cart_list.push(iterm_data);
+            });            
+            if(cart_list.length == 0){
+                alert("您还没有选中物品");
+                return ;
+            }
+
+            var carts_data = cart_list.join(";");
+            $.post("{:url('create_order')}",{'carts_data':carts_data},function(response){
+                console.log(response);
+                if(response['code']){
+                    window.location.href = "{:url('index/order/show_order')}"+"?order_no="+response['data'];
+                }else{
+                    alert(response['msg']);
+                }
+            })
+        }
+
+        function delete_good_iterm(){
+            console.log("delete_good_iterm");
+        }
+	</script>
+{/block}
+</body>
+</html>

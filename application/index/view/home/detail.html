@@ -1,0 +1,110 @@
+{extend name="common_home_page" /}
+{block name="content"}
+	<div class="breadcrumb">
+		<a href="#">全部分类</a>
+		<span>></span>
+		<a href="#">{$good.catalog_name}</a>
+		<span>></span>
+		<a href="#">商品详情</a>
+	</div>
+
+	<div class="goods_detail_con clearfix">
+		<div class="goods_detail_pic fl"><img src="{$good.original_img_src}" style="width:100%;height:100%"></div>
+
+		<div class="goods_detail_list fr">
+			<h3>{$good.good_name}</h3>
+			<p>{$good.des}</p>
+			<div class="prize_bar">
+				<span class="show_pirze">¥<em id="good_price">{$good.price}</em></span>
+				<span class="show_unit">单  位：{$good.measurement}</span>
+			</div>
+			<div class="goods_num clearfix">
+				<div class="num_name fl">数 量：</div>
+				<div class="num_add fl">
+					<input id="good_num" type="number" class="num_show fl" value="1">
+				</div> 
+			</div>
+			<div class="total">总价：<em id="total_price">{$good.price}</em></div>
+			<div class="operate_btn">
+				<a href="javascript:;" class="add_cart" id="add_cart">加入购物车</a>				
+			</div>
+		</div>
+	</div>
+
+	<div class="main_wrap clearfix">
+		<div class="l_wrap fl clearfix">
+			<div class="new_goods">
+				<h3>新品推荐</h3>
+				<ul>
+					<li>
+						<a href="#"><img src="{$Think.PUBLIC_PATH}shop/images/goods/goods001.jpg"></a>
+						<h4><a href="#">进口柠檬</a></h4>
+						<div class="prize">￥3.90</div>
+					</li>
+					<li>
+						<a href="#"><img src="{$Think.PUBLIC_PATH}shop/images/goods/goods002.jpg"></a>
+						<h4><a href="#">玫瑰香葡萄</a></h4>
+						<div class="prize">￥16.80</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="r_wrap fr clearfix">
+			<ul class="detail_tab clearfix">
+				<li class="active">商品介绍</li>
+			</ul>
+
+			<div class="tab_content">
+				<dl>
+					<dt>商品详情：</dt>
+					<dd>{$good.details}</dd>
+				</dl>
+			</div>
+
+		</div>
+	</div>
+
+	<div class="add_jump"></div>
+{/block}
+{block name="private_js"}
+	<script type="text/javascript">
+		var $add_cart_offset = $('#add_cart').offset();
+		var $add_x = $add_cart_offset.top;
+		var $add_y = $add_cart_offset.left;
+
+		var $show_count_offset = $('#show_count').offset();
+		console.log($show_count_offset);
+		var $to_x = $show_count_offset.top;
+		var $to_y = $show_count_offset.left;
+
+		$(".add_jump").css({'left':$add_y+80,'top':$add_x+10,'display':'block'})
+		$('#add_cart').click(function(){
+			$(".add_jump").stop().animate({
+				'left': $to_y+7,
+				'top': $to_x+7},
+				"fast", function() {
+					$(".add_jump").fadeOut('fast',function(){
+						add_good_to_cart();
+					});
+			});
+		})
+		$("#good_num").change(function(){
+			console.log('change')
+			var total_price = good_num*good_price;
+			$("#total_price").html(total_price);
+		});
+		function add_good_to_cart(){
+			var send_data ={
+				good_id:"{$good.good_id}",
+				good_name:"{$good.good_name}",
+				good_num:$("#good_num").val(),
+			};
+			$.post("{:url('index/cart/add_good_to_cart')}",send_data,function(data){
+				$('#show_count').html(data);
+			})
+		}
+	</script>
+{/block}
+</body>
+</html>
